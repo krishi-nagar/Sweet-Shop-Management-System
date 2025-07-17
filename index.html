@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweet Shop Management</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to ensure Inter font and smooth transitions */
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better content flow */
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1200px; /* Increased max-width for better layout */
+            display: grid;
+            grid-template-columns: 1fr; /* Single column for small screens */
+            gap: 30px;
+        }
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 1fr 2fr; /* Two columns for larger screens */
+            }
+        }
+        .form-section, .display-section {
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background-color: #fbfdff;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: #63b3ed;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+            outline: none;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-right: 10px; /* Spacing between buttons */
+        }
+        .btn-primary {
+            background-color: #4299e1; /* Blue */
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #3182ce; /* Darker blue */
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background-color: #ef4444; /* Red */
+            color: white;
+            border: none;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626; /* Darker red */
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background-color: #10b981; /* Green */
+            color: white;
+            border: none;
+        }
+        .btn-success:hover {
+            background-color: #059669; /* Darker green */
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background-color: #a0aec0; /* Gray */
+            color: white;
+            border: none;
+        }
+        .btn-secondary:hover {
+            background-color: #718096; /* Darker gray */
+            transform: translateY(-2px);
+        }
+        .message-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: none; /* Hidden by default */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .message-box.show {
+            display: block;
+            opacity: 1;
+        }
+        .message-box.success {
+            background-color: #d1fae5; /* Light green */
+            color: #065f46; /* Dark green text */
+            border: 1px solid #34d399;
+        }
+        .message-box.error {
+            background-color: #fee2e2; /* Light red */
+            color: #991b1b; /* Dark red text */
+            border: 1px solid #ef4444;
+        }
+        .sweet-list {
+            list-style: none;
+            padding: 0;
+        }
+        .sweet-item {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+        .sweet-item:hover {
+            transform: translateY(-3px);
+        }
+        .sweet-item div {
+            font-size: 0.95em;
+            color: #4a5568;
+        }
+        .sweet-item strong {
+            color: #2d3748;
+        }
+        .sweet-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .section-title {
+            font-size: 1.75rem; /* H2 size */
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .subsection-title {
+            font-size: 1.25rem; /* H3 size */
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="container">
+        <!-- Message Box for displaying success/error messages -->
+        <div id="messageBox" class="message-box"></div>
+
+        <!-- Left Section: Forms for Add, Delete, Purchase, Restock -->
+        <div class="form-section">
+            <h2 class="section-title">Sweet Shop Operations</h2>
+
+            <!-- Add Sweet Form -->
+            <h3 class="subsection-title">Add New Sweet</h3>
+            <div class="form-group">
+                <label for="addName">Name:</label>
+                <input type="text" id="addName" placeholder="e.g., Chocolate Bar" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="addCategory">Category:</label>
+                <input type="text" id="addCategory" placeholder="e.g., Chocolate" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="addPrice">Price:</label>
+                <input type="number" id="addPrice" step="0.01" placeholder="e.g., 2.50" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="addQuantity">Quantity:</label>
+                <input type="number" id="addQuantity" placeholder="e.g., 100" class="rounded-lg">
+            </div>
+            <button onclick="addSweet()" class="btn btn-primary w-full">Add Sweet</button>
+            <hr class="my-6 border-t border-gray-200">
+
+            <!-- Delete Sweet Form -->
+            <h3 class="subsection-title">Delete Sweet</h3>
+            <div class="form-group">
+                <label for="deleteId">Sweet ID:</label>
+                <input type="text" id="deleteId" placeholder="Enter Sweet ID to delete" class="rounded-lg">
+            </div>
+            <button onclick="deleteSweet()" class="btn btn-danger w-full">Delete Sweet</button>
+            <hr class="my-6 border-t border-gray-200">
+
+            <!-- Purchase Sweet Form -->
+            <h3 class="subsection-title">Purchase Sweet</h3>
+            <div class="form-group">
+                <label for="purchaseId">Sweet ID:</label>
+                <input type="text" id="purchaseId" placeholder="Enter Sweet ID to purchase" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="purchaseQuantity">Quantity:</label>
+                <input type="number" id="purchaseQuantity" placeholder="Quantity to purchase" class="rounded-lg">
+            </div>
+            <button onclick="purchaseSweet()" class="btn btn-success w-full">Purchase Sweet</button>
+            <hr class="my-6 border-t border-gray-200">
+
+            <!-- Restock Sweet Form -->
+            <h3 class="subsection-title">Restock Sweet</h3>
+            <div class="form-group">
+                <label for="restockId">Sweet ID:</label>
+                <input type="text" id="restockId" placeholder="Enter Sweet ID to restock" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="restockQuantity">Quantity:</label>
+                <input type="number" id="restockQuantity" placeholder="Quantity to restock" class="rounded-lg">
+            </div>
+            <button onclick="restockSweet()" class="btn btn-secondary w-full">Restock Sweet</button>
+        </div>
+
+        <!-- Right Section: Display and Search -->
+        <div class="display-section">
+            <h2 class="section-title">Sweet Inventory</h2>
+
+            <!-- Search Sweets Form -->
+            <h3 class="subsection-title">Search Sweets</h3>
+            <div class="form-group">
+                <label for="searchName">Name:</label>
+                <input type="text" id="searchName" placeholder="Search by name" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="searchCategory">Category:</label>
+                <input type="text" id="searchCategory" placeholder="Search by category" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="searchMinPrice">Min Price:</label>
+                <input type="number" id="searchMinPrice" step="0.01" placeholder="Minimum price" class="rounded-lg">
+            </div>
+            <div class="form-group">
+                <label for="searchMaxPrice">Max Price:</label>
+                <input type="number" id="searchMaxPrice" step="0.01" placeholder="Maximum price" class="rounded-lg">
+            </div>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button onclick="searchSweets()" class="btn btn-primary">Search</button>
+                <button onclick="clearSearch()" class="btn btn-secondary">Clear Search</button>
+            </div>
+            <hr class="my-6 border-t border-gray-200">
+
+            <!-- View All Sweets Section -->
+            <h3 class="subsection-title">Available Sweets</h3>
+            <button onclick="getAllSweets()" class="btn btn-primary mb-4 w-full">Refresh Sweet List</button>
+            <ul id="sweetList" class="sweet-list">
+                <!-- Sweet items will be dynamically loaded here -->
+                <li class="p-4 bg-blue-50 text-blue-700 rounded-lg text-center">No sweets available. Add some or refresh!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Base URL for your Flask backend
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+
+        // Function to display messages to the user
+        function showMessage(message, type = 'success') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.className = `message-box show ${type}`; // Add 'show' class to make it visible
+            setTimeout(() => {
+                messageBox.classList.remove('show'); // Hide after 3 seconds
+            }, 3000);
+        }
+
+        // Function to add a new sweet
+        async function addSweet() {
+            const name = document.getElementById('addName').value;
+            const category = document.getElementById('addCategory').value;
+            const price = parseFloat(document.getElementById('addPrice').value);
+            const quantity = parseInt(document.getElementById('addQuantity').value);
+
+            if (!name || !category || isNaN(price) || isNaN(quantity)) {
+                showMessage('Please fill in all fields correctly.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/sweets`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, category, price, quantity }),
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage(data.message, 'success');
+                    // Clear form fields
+                    document.getElementById('addName').value = '';
+                    document.getElementById('addCategory').value = '';
+                    document.getElementById('addPrice').value = '';
+                    document.getElementById('addQuantity').value = '';
+                    getAllSweets(); // Refresh the list of sweets
+                } else {
+                    showMessage(`Error: ${data.error || 'Failed to add sweet'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error adding sweet:', error);
+                showMessage('Network error or server is unreachable.', 'error');
+            }
+        }
+
+        // Function to delete a sweet
+        async function deleteSweet() {
+            const sweetId = document.getElementById('deleteId').value;
+
+            if (!sweetId) {
+                showMessage('Please enter a Sweet ID to delete.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/sweets/${sweetId}`, {
+                    method: 'DELETE',
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage(data.message, 'success');
+                    document.getElementById('deleteId').value = ''; // Clear ID field
+                    getAllSweets(); // Refresh the list
+                } else {
+                    showMessage(`Error: ${data.error || 'Failed to delete sweet'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting sweet:', error);
+                showMessage('Network error or server is unreachable.', 'error');
+            }
+        }
+
+        // Function to get and display all sweets
+        async function getAllSweets() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/sweets`);
+                const sweets = await response.json();
+                const sweetList = document.getElementById('sweetList');
+                sweetList.innerHTML = ''; // Clear previous list
+
+                if (sweets.length === 0) {
+                    sweetList.innerHTML = '<li class="p-4 bg-blue-50 text-blue-700 rounded-lg text-center">No sweets available. Add some or refresh!</li>';
+                    return;
+                }
+
+                sweets.forEach(sweet => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'sweet-item';
+                    listItem.innerHTML = `
+                        <div><strong>ID:</strong> ${sweet.id}</div>
+                        <div><strong>Name:</strong> ${sweet.name}</div>
+                        <div><strong>Category:</strong> ${sweet.category}</div>
+                        <div><strong>Price:</strong> $${sweet.price.toFixed(2)}</div>
+                        <div><strong>Quantity:</strong> ${sweet.quantity}</div>
+                    `;
+                    sweetList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('Error fetching sweets:', error);
+                showMessage('Network error or server is unreachable. Ensure backend is running.', 'error');
+                document.getElementById('sweetList').innerHTML = '<li class="p-4 bg-red-50 text-red-700 rounded-lg text-center">Failed to load sweets. Please check backend connection.</li>';
+            }
+        }
+
+        // Function to search for sweets
+        async function searchSweets() {
+            const name = document.getElementById('searchName').value;
+            const category = document.getElementById('searchCategory').value;
+            const minPrice = document.getElementById('searchMinPrice').value;
+            const maxPrice = document.getElementById('searchMaxPrice').value;
+
+            const queryParams = new URLSearchParams();
+            if (name) queryParams.append('name', name);
+            if (category) queryParams.append('category', category);
+            if (minPrice) queryParams.append('min_price', minPrice);
+            if (maxPrice) queryParams.append('max_price', maxPrice);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/sweets/search?${queryParams.toString()}`);
+                const sweets = await response.json();
+                const sweetList = document.getElementById('sweetList');
+                sweetList.innerHTML = ''; // Clear previous list
+
+                if (sweets.length === 0) {
+                    sweetList.innerHTML = '<li class="p-4 bg-yellow-50 text-yellow-700 rounded-lg text-center">No sweets found matching your search criteria.</li>';
+                    return;
+                }
+
+                sweets.forEach(sweet => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'sweet-item';
+                    listItem.innerHTML = `
+                        <div><strong>ID:</strong> ${sweet.id}</div>
+                        <div><strong>Name:</strong> ${sweet.name}</div>
+                        <div><strong>Category:</strong> ${sweet.category}</div>
+                        <div><strong>Price:</strong> $${sweet.price.toFixed(2)}</div>
+                        <div><strong>Quantity:</strong> ${sweet.quantity}</div>
+                    `;
+                    sweetList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('Error searching sweets:', error);
+                showMessage('Network error or server is unreachable.', 'error');
+            }
+        }
+
+        // Function to clear search fields and show all sweets
+        function clearSearch() {
+            document.getElementById('searchName').value = '';
+            document.getElementById('searchCategory').value = '';
+            document.getElementById('searchMinPrice').value = '';
+            document.getElementById('searchMaxPrice').value = '';
+            getAllSweets(); // Display all sweets after clearing search
+        }
+
+        // Function to purchase a sweet
+        async function purchaseSweet() {
+            const sweetId = document.getElementById('purchaseId').value;
+            const quantity = parseInt(document.getElementById('purchaseQuantity').value);
+
+            if (!sweetId || isNaN(quantity) || quantity <= 0) {
+                showMessage('Please enter a valid Sweet ID and a positive quantity.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/sweets/purchase`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: sweetId, quantity: quantity }),
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage(data.message, 'success');
+                    document.getElementById('purchaseId').value = '';
+                    document.getElementById('purchaseQuantity').value = '';
+                    getAllSweets(); // Refresh the list
+                } else {
+                    showMessage(`Error: ${data.error || 'Failed to purchase sweet'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error purchasing sweet:', error);
+                showMessage('Network error or server is unreachable.', 'error');
+            }
+        }
+
+        // Function to restock a sweet
+        async function restockSweet() {
+            const sweetId = document.getElementById('restockId').value;
+            const quantity = parseInt(document.getElementById('restockQuantity').value);
+
+            if (!sweetId || isNaN(quantity) || quantity <= 0) {
+                showMessage('Please enter a valid Sweet ID and a positive quantity.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/sweets/restock`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: sweetId, quantity: quantity }),
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage(data.message, 'success');
+                    document.getElementById('restockId').value = '';
+                    document.getElementById('restockQuantity').value = '';
+                    getAllSweets(); // Refresh the list
+                } else {
+                    showMessage(`Error: ${data.error || 'Failed to restock sweet'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error restock sweet:', error);
+                showMessage('Network error or server is unreachable.', 'error');
+            }
+        }
+
+        // Initial load of all sweets when the page loads
+        window.onload = getAllSweets;
+    </script>
+</body>
+</html>
